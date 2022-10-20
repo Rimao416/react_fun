@@ -30,10 +30,9 @@ function App() {
     console.log(data_filter);
     if (data_filter.length > 0) {
       document.getElementById("error-password").innerText =
-        "This password est déjà pris par [" +
-        data_filter[0].name +
-        "] " +
-        data_filter[0].email;
+        "This password belongs to " +
+        data_filter[0].email +
+        ".  Please, enter another";
     }
   };
   return (

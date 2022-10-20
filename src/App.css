@@ -40,6 +40,11 @@
   padding: 2%;
 }
 
+p#error-password {
+  color: red;
+  font-size: 15px;
+}
+
 .container button {
   background-color: #4BC970;
   padding: 20px;
