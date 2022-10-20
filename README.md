@@ -1,6 +1,10 @@
 # Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Pour lancer ce projet, vous devez lancer un mini serveur
+1)) Aller dans package.json
+Dans la partie Script, ajouter "server":"json-server --watch db.json --port 5000"
+npm run server
+
 
 ## Available Scripts
 
