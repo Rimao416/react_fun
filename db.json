@@ -1,0 +1,52 @@
+{
+  "user": [
+    {
+      "id": 1,
+      "name": "peter",
+      "email": "peter@mail.com",
+      "password": "12345"
+    },
+    {
+      "id": 2,
+      "name": "jack",
+      "email": "jack@mail.com",
+      "password": "54321"
+    },
+    {
+      "id": 3,
+      "name": "omari",
+      "email": "omari@mail.com",
+      "password": "54321"
+    },
+    {
+      "id": 4,
+      "name": "rahim",
+      "email": "rahim@mail.com",
+      "password": "54321"
+    },
+    {
+      "id": 5,
+      "name": "jackson",
+      "email": "jasckson@mail.com",
+      "password": "54321"
+    },
+    {
+      "id": 6,
+      "name": "spielberg",
+      "email": "spielberg@mail.com",
+      "password": "54321"
+    },
+    {
+      "id": 7,
+      "name": "dicaprio",
+      "email": "dicaprio@mail.com",
+      "password": "54321"
+    },
+    {
+      "id": 8,
+      "name": "leonard",
+      "email": "leonard@mail.com",
+      "password": "54321"
+    }
+  ]
+}
