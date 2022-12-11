@@ -1,0 +1,90 @@
+div.slide{
+    background-color: green;
+    position: relative;
+}
+
+
+div.slide .slide_img{
+    position: relative;
+    width: 350px;
+    height: 350px;
+    /* background-color: aqua; */
+    display: flex;
+    /* width: 100%;
+    height: 100%; */
+    overflow: hidden;
+}
+div.slide .slide_img .images{
+    position: relative;
+    /*
+    top: 0;
+    left: 0; */
+    /* width: 100%;
+    height: 100%; */
+    width: 100%;
+    height: 100%;
+    transition: .5s ease;
+
+    /* display: flex;
+    flex-direction:row; */
+    /* width: 100%;
+    height: 100%; */
+    background-color: red;
+    /* overflow: hidden; */
+    /* transform: translateX(-300%); */
+}
+/* div.slide .slide_img .images{
+    transform: translateX(-200%);
+} */
+
+
+  /* div.slide .slide_img img{ 
+     position: relative; 
+     width: ; */
+     /* top: 0; */
+    /* width: 100%;
+    height: 100%;
+    object-fit: cover;
+    overflow: hidden;
+} 
+div.slide .slide_text{
+    cursor: pointer;
+    text-align: center;
+    color: white;
+    background-color: brown;
+    transition: .5s;
+}
+div.slide .slide_text:active{
+    transform: scale(.5);
+}
+*/
+
+div.slide .bar_left{
+    position: absolute;
+    top: 0;
+    display: inline;
+    background-color: rebeccapurple;
+    height: 100%;
+    z-index: 99;
+    width: 30px;
+}
+div.slide .bar_right{
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline;
+    background-color: rebeccapurple;
+    height: 100%;
+    z-index: 99;
+    width: 30px;
+}
+div.slide .bar_left span,div.slide .bar_right span{
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+div.slide .bar_left span svg,div.slide .bar_right span svg{
+    font-size: x-large;
+} 
