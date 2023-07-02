@@ -1,20 +1,51 @@
-import './App.css';
-import React,{useState} from "react";
-import FunctionContextComponent from './FunctionContextComponent';
-import ClassContextComponent from './ClassContextComponent';
-export const ThemeContext=React.createContext()
+import "./App.css";
+import React, { useState } from "react";
 
-export default function App() {
-  const [darkTheme, setDarkTheme] = useState(true);
-  function toggleTheme() {
-    setDarkTheme((prevDarkTheme) => !prevDarkTheme);
-  }
+const theme = {
+  dark: {
+    background: "#000",
+    color: "#fff",
+  },
+  light: {
+    background: "#fff",
+    color: "#000",
+  },
+};
+// export const ThemeContext=React.createContext()
+const ThemeContext = React.createContext(theme.dark);
+
+function SearchForm() {
   return (
-    <ThemeContext.Provider value={darkTheme}>
-      <button onClick={toggleTheme}>Toggle Theme</button>
-      <FunctionContextComponent />
-      <ClassContextComponent />
-    </ThemeContext.Provider>
+    <div>
+      <input type="text" />
+      <ThemedButton>M'inscrire</ThemedButton>
+    </div>
   );
 }
 
+function Toolbar() {
+  return (
+    <div>
+      <SearchForm />
+      <ThemedButton>M'inscrire</ThemedButton>
+    </div>
+  );
+}
+
+function ThemedButton({ children }) {
+  return (
+    <ThemeContext.Consumer>
+      {(value) => {
+        return <button style={value}>{children}</button>;
+      }}
+    </ThemeContext.Consumer>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeContext.Provider value={theme.dark}>
+      <Toolbar />
+    </ThemeContext.Provider>
+  );
+}
