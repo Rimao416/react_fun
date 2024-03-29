@@ -1,46 +1,35 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import {
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { View, Text, StyleSheet, Button } from "react-native";
+import BottomSheet, {
   BottomSheetModal,
   BottomSheetView,
   BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
+} from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 export default function TabOneScreen() {
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheet>(null);
+  const [isOpen, setIsOpen] = useState(true);
 
   // variables
-  const snapPoints = useMemo(() => ['25%', '50%'], []);
+  const snapPoints = useMemo(() => ["25%", "50%"], []);
 
-  // callbacks
-  const handlePresentModalPress = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-  }, []);
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
-  }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-
-    <BottomSheetModalProvider>
-    <View style={styles.container}>
-      <Button
+      <BottomSheetModalProvider>
+        <View style={styles.container}>
+          {/* <Button
         onPress={handlePresentModalPress}
         title="Present Modal"
         color="black"
-      />
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-      >
-        <BottomSheetView style={styles.contentContainer}>
-          <Text>Awesome 🎉</Text>
-        </BottomSheetView>
-      </BottomSheetModal>
-    </View>
-  </BottomSheetModalProvider>
+      /> */}
+          <BottomSheet ref={sheetRef} snapPoints={snapPoints}
+          enablePanDownToClose={true}
+          onClose={() => setIsOpen(false)}
+          >
+            <Text>Salut</Text>
+          </BottomSheet>
+        </View>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }
@@ -49,11 +38,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    justifyContent: 'center',
-    backgroundColor: 'grey',
+    justifyContent: "center",
+    backgroundColor: "grey",
   },
   contentContainer: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
 });
