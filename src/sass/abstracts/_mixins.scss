@@ -9,11 +9,22 @@
     list-style: none;
     padding: 0;
     margin: 0;
+    a{
+        text-decoration: none;
+        color: inherit;
+    }
+  }
+  @mixin flex {
+    display: flex;
+    align-items: center;
   }
   @mixin flexCenter {
-    display: flex;
+    @include flex;
     justify-content: center;
-    align-items: center;
+  }
+  @mixin flexBetween {
+    @include flex;
+    justify-content: space-between;
   }
   @mixin textEllipsis {
     white-space: nowrap;
