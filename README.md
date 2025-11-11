@@ -1,180 +1,227 @@
-# 🏗️ Architecture Next.js Enterprise - Documentation Complète
+# 🏠 Web Landing - Architecture Next.js 14
 
-> **Version:** 1.0.0  
-> **Stack:** Next.js 14+ (App Router), TypeScript, Zustand, TailwindCSS  
-> **Niveau:** Senior / Production Ready
-
----
-
-## 📋 Table des Matières
-
-1. [Vue d'ensemble](#vue-densemble)
-2. [Structure des dossiers](#structure-des-dossiers)
-3. [Couches de l'architecture](#couches-de-larchitecture)
-4. [Conventions de nommage](#conventions-de-nommage)
-5. [Gestion d'état avec Zustand](#gestion-détat-avec-zustand)
-6. [Services et API](#services-et-api)
-7. [Hooks personnalisés](#hooks-personnalisés)
-8. [Types TypeScript](#types-typescript)
-9. [Styling avec TailwindCSS](#styling-avec-tailwindcss)
-10. [Tests](#tests)
-11. [Performance et Optimisation](#performance-et-optimisation)
-
----
-
-## 🎯 Vue d'ensemble
-
-### Principes fondamentaux
-
-Cette architecture suit les principes suivants :
-
-- **Séparation des responsabilités** : Chaque couche a un rôle bien défini
-- **Scalabilité** : Structure modulaire qui grandit avec le projet
-- **Maintenabilité** : Code propre, organisé et documenté
-- **Performance** : Optimisations Next.js (SSR, ISR, Streaming)
-- **Type Safety** : TypeScript strict sur tout le projet
-- **DRY (Don't Repeat Yourself)** : Réutilisation maximale du code
-
-### Technologies principales
-
-```json
-{
-  "framework": "Next.js 14+",
-  "language": "TypeScript 5+",
-  "styling": "TailwindCSS 3+",
-  "state": "Zustand 4+",
-  "http": "Axios / Fetch API",
-  "forms": "React Hook Form + Zod",
-  "testing": "Jest + React Testing Library"
-}
-```
-
----
-
-## 📁 Structure des dossiers
+## 📁 Structure Complète
 
 ```
-my-nextjs-app/
-│
-├── public/                       # Assets statiques
+apps/web-landing/
+├── 📁 app/                      # App Router Next.js 14
+│   ├── (marketing)/             # Route groups - Pages marketing
+│   │   ├── page.tsx             # Homepage "/"
+│   │   ├── about/
+│   │   │   └── page.tsx         # "/about"
+│   │   ├── features/
+│   │   │   ├── page.tsx         # "/features"
+│   │   │   ├── local-services/
+│   │   │   │   └── page.tsx     # "/features/local-services"
+│   │   │   └── digital-services/
+│   │   │       └── page.tsx     # "/features/digital-services"
+│   │   ├── pricing/
+│   │   │   └── page.tsx         # "/pricing"
+│   │   ├── success-stories/
+│   │   │   ├── page.tsx         # "/success-stories"
+│   │   │   └── [slug]/
+│   │   │       └── page.tsx     # "/success-stories/aminata-senegal"
+│   │   └── contact/
+│   │       └── page.tsx         # "/contact"
+│   ├── (auth)/                  # Pages authentification
+│   │   ├── login/
+│   │   │   └── page.tsx         # "/login"
+│   │   ├── register/
+│   │   │   ├── page.tsx         # "/register"
+│   │   │   ├── freelancer/
+│   │   │   │   └── page.tsx     # "/register/freelancer"
+│   │   │   └── client/
+│   │   │       └── page.tsx     # "/register/client"
+│   │   └── forgot-password/
+│   │       └── page.tsx         # "/forgot-password"
+│   ├── (legal)/                 # Pages légales
+│   │   ├── privacy/
+│   │   │   └── page.tsx         # "/privacy"
+│   │   ├── terms/
+│   │   │   └── page.tsx         # "/terms"
+│   │   └── cookies/
+│   │       └── page.tsx         # "/cookies"
+│   ├── (localized)/             # Pages multilingues
+│   │   ├── [locale]/
+│   │   │   ├── page.tsx         # "/fr", "/en", "/ar"
+│   │   │   ├── about/
+│   │   │   ├── features/
+│   │   │   └── contact/
+│   │   └── layout.tsx           # Layout localisé
+│   ├── api/                     # API Routes
+│   │   ├── auth/
+│   │   │   ├── register/
+│   │   │   │   └── route.ts     # POST /api/auth/register
+│   │   │   └── login/
+│   │   │       └── route.ts     # POST /api/auth/login
+│   │   ├── contact/
+│   │   │   └── route.ts         # POST /api/contact
+│   │   ├── newsletter/
+│   │   │   └── route.ts         # POST /api/newsletter
+│   │   ├── waitlist/
+│   │   │   └── route.ts         # POST /api/waitlist
+│   │   └── webhooks/
+│   │       ├── stripe/
+│   │       │   └── route.ts     # Stripe webhooks
+│   │       └── mailchimp/
+│   │           └── route.ts     # Mailchimp webhooks
+│   ├── globals.css              # Styles globaux Tailwind
+│   ├── layout.tsx               # Root layout
+│   ├── loading.tsx              # Loading UI global
+│   ├── error.tsx                # Error boundaries
+│   ├── not-found.tsx            # 404 page
+│   └── robots.txt               # SEO robots
+├── 📁 components/               # Composants React
+│   ├── 🎨 ui/                   # Design System (shadcn/ui)
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   ├── card.tsx
+│   │   ├── badge.tsx
+│   │   ├── dialog.tsx
+│   │   ├── dropdown.tsx
+│   │   ├── accordion.tsx
+│   │   ├── tabs.tsx
+│   │   ├── carousel.tsx
+│   │   ├── tooltip.tsx
+│   │   └── index.ts             # Barrel exports
+│   ├── 📋 forms/                # Formulaires complexes
+│   │   ├── ContactForm.tsx
+│   │   ├── RegisterForm.tsx
+│   │   ├── LoginForm.tsx
+│   │   ├── WaitlistForm.tsx
+│   │   ├── NewsletterForm.tsx
+│   │   └── FeedbackForm.tsx
+│   ├── 🔒 auth/                 # Composants auth
+│   │   ├── SocialLogin.tsx
+│   │   ├── AuthModal.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   └── AuthProvider.tsx
+│   └── 🎬 animations/           # Animations Framer Motion
+│       ├── FadeIn.tsx
+│       ├── SlideUp.tsx
+│       ├── StaggerChildren.tsx
+│       ├── FloatAnimation.tsx
+│       └── PageTransition.tsx
+├── 📁 lib/                      # Utilitaires & configurations
+│   ├── api/                     # Client API
+│   │   ├── client.ts            # Axios setup
+│   │   ├── auth.ts              # Auth endpoints
+│   │   ├── contact.ts           # Contact endpoints
+│   │   ├── newsletter.ts        # Newsletter endpoints
+│   │   └── types.ts             # API types
+│   ├── auth/                    # Authentification
+│   ├── email/                   # Email services
+│   │   ├── resend.ts            # Resend API
+│   │   ├── templates.ts         # Email templates
+│   │   └── newsletter.ts        # Newsletter logic
+│   ├── seo/                     # SEO utilities
+│   │   ├── metadata.ts          # Meta generation
+│   │   ├── schema.ts            # JSON-LD schemas
+│   │   ├── sitemap.ts           # Sitemap generation
+│   │   └── robots.ts            # Robots.txt
+│   ├── i18n/                    # Internationalisation
+│   │   ├── config.ts            # i18n configuration
+│   │   ├── dictionaries.ts      # Dictionnaires langues
+│   │   ├── middleware.ts        # Middleware i18n
+│   │   └── utils.ts             # i18n helpers
+│   ├── validations/             # Zod schemas
+│   │   ├── auth.ts              # Auth validation
+│   │   ├── contact.ts           # Contact validation
+│   │   ├── newsletter.ts        # Newsletter validation
+│   │   └── common.ts            # Common schemas
+│   ├── utils/                   # Utilitaires généraux
+│   │   ├── cn.ts                # Class name utility
+│   │   ├── fonts.ts             # Font definitions
+│   │   ├── constants.ts         # App constants
+│   │   ├── format.ts            # Formatters
+│   │   └── helpers.ts           # Helper functions
+│   └── hooks/                   # Custom hooks
+│       ├── useAuth.ts
+│       ├── useLocalStorage.ts
+│       ├── useDebounce.ts
+│       ├── useIntersection.ts
+│       ├── useScrollPosition.ts
+│       ├── useMediaQuery.ts
+│       └── useClickOutside.ts
+├── 📁 content/                  # Contenu statique (MDX)
+│   ├── blog/                    # Articles de blog
+│   │   ├── launch-announcement.mdx
+│   │   ├── african-freelance-guide.mdx
+│   │   ├── mobile-money-integration.mdx
+│   │   └── success-stories.mdx
+│   ├── pages/                   # Pages statiques
+│   │   ├── about.mdx
+│   │   ├── privacy.mdx
+│   │   ├── terms.mdx
+│   │   └── cookies.mdx
+│   ├── testimonials/            # Témoignages
+│   │   ├── aminata-senegal.mdx
+│   │   ├── koffi-ivoire.mdx
+│   │   └── fatima-mali.mdx
+│   ├── features/                # Descriptions features
+│   │   ├── local-services.mdx
+│   │   ├── digital-services.mdx
+│   │   ├── mobile-money.mdx
+│   │   └── academy.mdx
+│   └── faq/                     # Questions fréquentes
+│       ├── general.mdx
+│       ├── payments.mdx
+│       ├── freelancers.mdx
+│       └── clients.mdx
+├── 📁 data/                     # Données statiques
+│   ├── countries.json           # Pays africains supportés
+│   ├── testimonials.json        # Témoignages clients
+│   ├── features.json            # Liste des fonctionnalités
+│   ├── stats.json               # Statistiques platform
+│   ├── pricing.json             # Plans tarifaires
+│   ├── team.json                # Équipe Siyé
+│   ├── partners.json            # Partenaires
+│   ├── faqs.json                # FAQ structurée
+│   └── translations/            # Traductions i18n
+│       ├── fr.json
+│       ├── en.json
+│       ├── ar.json
+│       ├── wo.json              # Wolof (Sénégal)
+│       └── bm.json              # Bambara (Mali)
+├── 📁 styles/                   # Styles CSS
+│   ├── globals.css              # Styles Tailwind globaux
+│   ├── components.css           # Styles composants custom
+│   ├── animations.css           # Animations CSS custom
+│   ├── fonts.css                # Font faces custom
+│   └── print.css                # Styles impression
+├── 📁 public/                   # Assets statiques
 │   ├── images/
-│   ├── fonts/
-│   └── favicon.ico
-│
-├── src/
-│   ├── app/                      # App Router Next.js
-│   │   ├── (auth)/               # Route groups
-│   │   ├── (dashboard)/
-│   │   ├── api/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   ├── error.tsx
-│   │   ├── loading.tsx
-│   │   └── not-found.tsx
-│   │
-│   ├── components/               # Composants React
-│   │   ├── ui/                   # Composants UI réutilisables
-│   │   ├── features/             # Composants métier
-│   │   ├── layout/               # Layout components
-│   │   └── shared/               # Composants partagés
-│   │
-│   ├── hooks/                    # Custom Hooks
-│   │   ├── useAuth.ts
-│   │   ├── useDebounce.ts
-│   │   └── index.ts
-│   │
-│   ├── stores/                   # Zustand stores
-│   │   ├── authStore.ts
-│   │   ├── userStore.ts
-│   │   └── index.ts
-│   │
-│   ├── services/                 # Services & API
-│   │   ├── api/
-│   │   ├── storage/
-│   │   └── index.ts
-│   │
-│   ├── lib/                      # Utilitaires
-│   │   ├── utils/
-│   │   ├── constants/
-│   │   └── config/
-│   │
-│   ├── types/                    # Types TypeScript
-│   │   ├── api.types.ts
-│   │   ├── user.types.ts
-│   │   └── index.ts
-│   │
-│   ├── styles/                   # Styles globaux
-│   │   └── globals.css
-│   │
-│   └── middleware.ts             # Next.js middleware
-│
-├── tests/                        # Tests
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-│
-├── .env.local                    # Variables d'environnement
-├── next.config.js                # Configuration Next.js
-├── tailwind.config.ts            # Configuration Tailwind
-├── tsconfig.json                 # Configuration TypeScript
-└── package.json
-```
-
----
-
-## 🧪 Tests
-
-### Structure des tests
-
-```
-tests/
-├── unit/
+│   ├── icons/
+│   ├── manifest.json            # PWA manifest
+│   ├── robots.txt               # SEO robots
+│   └── sitemap.xml              # SEO sitemap
+├── 📁 __tests__/                # Tests
 │   ├── components/
-│   ├── hooks/
-│   └── utils/
-├── integration/
-│   └── api/
-└── e2e/
-    └── flows/
+│   │   ├── ui/
+│   │   ├── marketing/
+│   │   └── forms/
+│   ├── pages/
+│   ├── api/
+│   ├── utils/
+│   ├── e2e/                     # Tests Playwright E2E
+│   └── fixtures/                # Test data
+│       ├── users.json
+│       ├── testimonials.json
+│       └── countries.json
+├── 📁 .storybook/               # Storybook config
+│   ├── main.ts
+│   ├── preview.ts
+│   └── theme.ts
+├── ⚙️ Configuration Files
+├── 📦 package.json
+├── 🏗️ tsconfig.json
+├── 🎨 tailwind.config.js
+├── 📋 next.config.js
+├── 🔧 eslint.config.js
+├── 🎭 prettier.config.js
+├── 🧪 jest.config.js
+├── 🎪 playwright.config.ts
+├── 🔒 middleware.ts             # Next.js middleware
+├── 📊 instrumentation.ts        # Observability setup
+└── 📖 README.md
 ```
-
-## 🚀 Checklist Projet
-
-### Setup Initial
-- [ ] Initialiser Next.js avec TypeScript
-- [ ] Configurer TailwindCSS
-- [ ] Installer Zustand + middleware
-- [ ] Configurer ESLint + Prettier
-- [ ] Setup Husky + lint-staged
-- [ ] Créer structure de dossiers
-
-### Développement
-- [ ] Créer composants UI de base
-- [ ] Implémenter stores Zustand
-- [ ] Créer services API
-- [ ] Développer hooks personnalisés
-- [ ] Définir types TypeScript
-- [ ] Écrire tests unitaires
-
-### Production
-- [ ] Optimiser images
-- [ ] Configurer SEO (metadata)
-- [ ] Setup monitoring (Sentry)
-- [ ] Configurer analytics
-- [ ] Tests E2E
-- [ ] Performance audit (Lighthouse)
-
----
-
-## 📚 Ressources
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Zustand Documentation](https://docs.pmnd.rs/zustand)
-- [TailwindCSS Documentation](https://tailwindcss.com/docs)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-
----
-
-**Auteur:** Architecture Senior Next.js  
-**Date:** 2025  
-**Version:** 1.0.0
