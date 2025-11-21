@@ -1,0 +1,753 @@
+// ========================================================
+// 📘 Prisma Schema – Plateforme Freelance / Client
+// ========================================================
+// Docs : https://pris.ly/d/prisma-schema
+// ========================================================
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================================
+// 🔹 ENUMS DE BASE
+// ========================================================
+
+enum UserRole {
+  CLIENT
+  FREELANCER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BANNED
+}
+enum MissionType {
+  LOCAL_SERVICE    // Ménage, cuisine, livraison, etc.
+  DIGITAL_SERVICE  // Design, dev, rédaction, etc.
+}
+
+enum MissionStatus {
+  DRAFT           // Client en train de créer
+  PUBLISHED       // Visible et ouverte aux candidatures
+  IN_PROGRESS     // Mission attribuée et en cours
+  COMPLETED       // Travail terminé, en attente validation
+  VALIDATED       // Client a validé le travail
+  DISPUTED        // Litige en cours
+  CANCELLED       // Annulée avant début
+  CLOSED          // Terminée et payée
+}
+
+enum ProposalStatus {
+  PENDING         // En attente de réponse du client
+  ACCEPTED        // Client a accepté
+  REJECTED        // Client a refusé
+  WITHDRAWN       // Freelancer a retiré sa candidature
+}
+
+enum ContractStatus {
+  ACTIVE          // Mission en cours
+  PAUSED          // Mise en pause temporaire
+  COMPLETED       // Travail terminé
+  CANCELLED       // Annulé
+}
+
+enum PaymentStatus {
+  PENDING         // En attente (fonds bloqués)
+  HELD            // Fonds en escrow
+  PROCESSING      // En cours de traitement
+  COMPLETED       // Payé au freelancer
+  REFUNDED        // Remboursé au client
+  FAILED          // Échec du paiement
+}
+
+enum TransactionType {
+  MISSION_PAYMENT      // Paiement mission
+  PLATFORM_FEE         // Commission plateforme
+  REFUND               // Remboursement
+  WITHDRAWAL           // Retrait vers Mobile Money
+  DEPOSIT              // Dépôt
+  SAVINGS              // Épargne automatique
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+enum ReviewType {
+  CLIENT_TO_FREELANCER
+  FREELANCER_TO_CLIENT
+}
+
+// ========================================================
+// 🔹 MODEL USER
+// ========================================================
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  phone         String?      @unique
+  password      String
+
+  role          UserRole     @default(CLIENT)
+  status        UserStatus   @default(ACTIVE)
+
+  // Profil
+  firstName     String
+  lastName      String
+  avatar        String?
+  country       String?
+  language      String       @default("fr")
+
+  // Vérification
+  emailVerified Boolean      @default(false)
+  phoneVerified Boolean      @default(false)
+
+  // Sécurité
+  twoFactorEnabled Boolean   @default(false)
+  twoFactorSecret  String?
+
+  // Timestamps
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relations
+  profile        Profile?
+  reputation     Reputation?
+  refreshTokens  RefreshToken[]
+  onboardingProgress OnboardingProgress?
+  onboardingData OnboardingData?
+    // Relations Missions
+  clientMissions        Mission[]      @relation("ClientMissions")
+  freelancerProposals   Proposal[]     @relation("FreelancerProposals")
+  clientContracts       Contract[]     @relation("ClientContracts")
+  freelancerContracts   Contract[]     @relation("FreelancerContracts")
+  
+  // Relations Paiements
+  paymentsSent          Payment[]      @relation("PaymentsSent")
+  paymentsReceived      Payment[]      @relation("PaymentsReceived")
+  transactions          Transaction[]  @relation("UserTransactions")
+  wallet                Wallet?        @relation("UserWallet")
+  
+  // Relations Reviews
+  reviewsGiven          Review[]       @relation("ReviewsGiven")
+  reviewsReceived       Review[]       @relation("ReviewsReceived")
+  
+  // Relations Disputes
+  disputesOpened        Dispute[]      @relation("DisputesOpened")
+  disputesAgainst       Dispute[]      @relation("DisputesAgainst")
+  disputesHandled       Dispute[]      @relation("DisputesHandled")
+  
+  // Relations Messages
+  messagesSent          Message[]      @relation("MessagesSent")
+  messagesReceived      Message[]      @relation("MessagesReceived")
+  @@index([email])
+  @@index([phone])
+  @@map("users")
+}
+
+// ========================================================
+// 🔹 MODEL PROFILE
+// ========================================================
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio         String?
+  skills      String[]
+  hourlyRate  Decimal?
+  portfolio   Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+// ========================================================
+// 🔹 MODEL REPUTATION
+// ========================================================
+
+model Reputation {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  rating          Decimal  @default(0)
+  totalReviews    Int      @default(0)
+  completedJobs   Int      @default(0)
+  successRate     Decimal  @default(0)
+  responseTime    Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("reputations")
+}
+
+// ========================================================
+// 🔹 MODEL REFRESH TOKEN
+// ========================================================
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ========================================================
+// 🔹 ENUMS – ONBOARDING FLOW
+// ========================================================
+
+enum ServiceType {
+  LOCAL
+  DIGITAL
+  BOTH
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  EXPERIENCED
+  EXPERT
+}
+
+enum Goal {
+  MAIN_INCOME
+  SIDE_INCOME
+  BUILD_BUSINESS
+  LEARN_SKILLS
+}
+
+enum EducationLevel {
+  NONE
+  PRIMARY
+  SECONDARY
+  VOCATIONAL
+  UNIVERSITY
+  OTHER_CERTIFICATION
+}
+
+enum LanguageLevel {
+  BEGINNER
+  INTERMEDIATE
+  FLUENT
+  NATIVE
+}
+
+enum Availability {
+  MORNING
+  AFTERNOON
+  EVENING
+  WEEKEND
+  FLEXIBLE
+}
+
+enum PaymentMethod {
+  MOBILE_MONEY
+  BANK_ACCOUNT
+  CASH
+}
+
+// ========================================================
+// 🔹 MODEL ONBOARDING PROGRESS
+// ========================================================
+
+model OnboardingProgress {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentStep     Int      @default(1)
+  completedSteps  Int[]    @default([])
+  isCompleted     Boolean  @default(false)
+
+  formData        Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("onboarding_progress")
+}
+
+// ========================================================
+// 🔹 MODEL ONBOARDING DATA
+// ========================================================
+
+model OnboardingData {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Étape 1: Parcours
+  serviceType     ServiceType
+
+  // Étape 2: Localisation
+  country         String
+  city            String
+  district        String?
+  canTravel       Boolean   @default(false)
+  maxDistance     Int?
+
+  // Étape 3: Expérience
+  experienceLevel ExperienceLevel
+
+  // Étape 4: Objectif
+  goal            Goal
+
+  // Étape 5: Compétences
+  selectedSkills  String[]
+  categories      String[]
+
+  // Étape 6: Éducation
+  educationLevel  EducationLevel?
+  fieldOfStudy    String?
+
+  // Étape 7: Langues
+  languages       Json
+
+  // Étape 8: Disponibilité
+  availability    Availability[]
+  hoursPerWeek    Int?
+
+  // Étape 9: Contact & Paiement
+  phoneVerified      Boolean   @default(false)
+  whatsappNumber     String?
+  paymentMethod      PaymentMethod
+  paymentDetails     Json?
+  emergencyContact   Json?
+
+  // Étape 10: Bio & Présentation
+  bio                String?
+  profileCompleted   Boolean   @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("onboarding_data")
+}
+
+
+// ========================================================
+// 🔹 MODEL MISSION (Demande de travail)
+// ========================================================
+
+model Mission {
+  id                String        @id @default(cuid())
+  
+  // Client qui poste
+  clientId          String
+  client            User          @relation("ClientMissions", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  // Informations de base
+  title             String
+  description       String
+  missionType       MissionType
+  category          String        // "cleaning", "cooking", "web-design", etc.
+  
+  // Budget & Durée
+  budget            Decimal
+  currency          String        @default("EUR")
+  isRecurring       Boolean       @default(false)  // Mission récurrente ?
+  recurringDetails  Json?         // Fréquence, durée contrat
+  estimatedDuration Int?          // En heures ou jours
+  
+  // Localisation (pour missions locales)
+  isLocal           Boolean       @default(false)
+  location          String?
+  address           String?
+  latitude          Decimal?
+  longitude         Decimal?
+  maxDistance       Int?          // Rayon en km
+  
+  // Compétences requises
+  requiredSkills    String[]
+  experienceLevel   ExperienceLevel?
+  
+  // Deadline & Disponibilité
+  startDate         DateTime?
+  deadline          DateTime?
+  preferredSchedule Json?         // Horaires préférés
+  
+  // Statut
+  status            MissionStatus @default(DRAFT)
+  
+  // Métadonnées
+  viewsCount        Int           @default(0)
+  proposalsCount    Int           @default(0)
+  
+  // Attachements
+  attachments       Json?         // Photos, docs
+  
+  // Timestamps
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  publishedAt       DateTime?
+  closedAt          DateTime?
+  
+  // Relations
+  proposals         Proposal[]
+  contract          Contract?
+  payments          Payment[]
+  reviews           Review[]
+  disputes          Dispute[]
+  
+  @@index([clientId])
+  @@index([status])
+  @@index([missionType])
+  @@index([category])
+  @@index([createdAt])
+  @@map("missions")
+}
+
+// ========================================================
+// 🔹 MODEL PROPOSAL (Candidature freelancer)
+// ========================================================
+
+model Proposal {
+  id                String         @id @default(cuid())
+  
+  // Relations
+  missionId         String
+  mission           Mission        @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  freelancerId      String
+  freelancer        User           @relation("FreelancerProposals", fields: [freelancerId], references: [id], onDelete: Cascade)
+  
+  // Proposition
+  coverLetter       String         // Lettre de motivation
+  proposedPrice     Decimal
+  estimatedDelivery Int            // Jours ou heures
+  
+  // Disponibilité
+  availableFrom     DateTime?
+  
+  // Statut
+  status            ProposalStatus @default(PENDING)
+  
+  // Timestamps
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  respondedAt       DateTime?      // Quand client a répondu
+  
+  // Relation contract (si accepté)
+  contract          Contract?
+  
+  @@unique([missionId, freelancerId]) // Un freelancer = 1 seule candidature par mission
+  @@index([missionId])
+  @@index([freelancerId])
+  @@index([status])
+  @@map("proposals")
+}
+
+// ========================================================
+// 🔹 MODEL CONTRACT (Mission attribuée)
+// ========================================================
+
+model Contract {
+  id                String         @id @default(cuid())
+  
+  // Relations
+  missionId         String         @unique
+  mission           Mission        @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  proposalId        String         @unique
+  proposal          Proposal       @relation(fields: [proposalId], references: [id])
+  
+  clientId          String
+  client            User           @relation("ClientContracts", fields: [clientId], references: [id])
+  
+  freelancerId      String
+  freelancer        User           @relation("FreelancerContracts", fields: [freelancerId], references: [id])
+  
+  // Termes du contrat
+  agreedPrice       Decimal
+  platformFee       Decimal        // Commission calculée
+  freelancerEarnings Decimal       // Ce que touche le freelancer
+  
+  // Dates
+  startDate         DateTime       @default(now())
+  expectedEndDate   DateTime?
+  actualEndDate     DateTime?
+  
+  // Statut
+  status            ContractStatus @default(ACTIVE)
+  
+  // Suivi progression (pour missions longues)
+  milestones        Json?          // Jalons/étapes
+  progressUpdates   Json?          // Updates du freelancer
+  
+  // Validation
+  workSubmittedAt   DateTime?      // Quand freelancer marque "terminé"
+  clientValidatedAt DateTime?      // Quand client valide
+  
+  // Timestamps
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  // Relations
+  payments          Payment[]
+  messages          Message[]
+  
+  @@index([clientId])
+  @@index([freelancerId])
+  @@index([status])
+  @@map("contracts")
+}
+
+// ========================================================
+// 🔹 MODEL PAYMENT (Paiements & Escrow)
+// ========================================================
+
+model Payment {
+  id                String         @id @default(cuid())
+  
+  // Relations
+  missionId         String
+  mission           Mission        @relation(fields: [missionId], references: [id])
+  
+  contractId        String?
+  contract          Contract?      @relation(fields: [contractId], references: [id])
+  
+  // De qui à qui
+  fromUserId        String
+  fromUser          User           @relation("PaymentsSent", fields: [fromUserId], references: [id])
+  
+  toUserId          String?
+  toUser            User?          @relation("PaymentsReceived", fields: [toUserId], references: [id])
+  
+  // Montants
+  amount            Decimal
+  currency          String         @default("EUR")
+  platformFee       Decimal        @default(0)
+  netAmount         Decimal        // Montant net reçu
+  
+  // Type & Statut
+  type              TransactionType
+  status            PaymentStatus  @default(PENDING)
+  
+  // Méthode de paiement
+  paymentMethod     PaymentMethod
+  paymentDetails    Json?          // Infos Mobile Money, etc.
+  
+  // Identifiants externes
+  externalId        String?        // ID transaction Mobile Money
+  receiptUrl        String?
+  
+  // Timestamps
+  createdAt         DateTime       @default(now())
+  processedAt       DateTime?
+  completedAt       DateTime?
+  
+  // Relations
+  transaction       Transaction?
+  
+  @@index([missionId])
+  @@index([contractId])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([status])
+  @@map("payments")
+}
+
+// ========================================================
+// 🔹 MODEL TRANSACTION (Historique financier utilisateur)
+// ========================================================
+
+model Transaction {
+  id                String          @id @default(cuid())
+  
+  userId            String
+  user              User            @relation("UserTransactions", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Type & montant
+  type              TransactionType
+  amount            Decimal
+  currency          String          @default("EUR")
+  
+  // Balance avant/après
+  balanceBefore     Decimal
+  balanceAfter      Decimal
+  
+  // Référence
+  paymentId         String?         @unique
+  payment           Payment?        @relation(fields: [paymentId], references: [id])
+  
+  description       String?
+  metadata          Json?
+  
+  createdAt         DateTime        @default(now())
+  
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+// ========================================================
+// 🔹 MODEL WALLET (Portefeuille utilisateur)
+// ========================================================
+
+model Wallet {
+  id                String   @id @default(cuid())
+  
+  userId            String   @unique
+  user              User     @relation("UserWallet", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Soldes
+  availableBalance  Decimal  @default(0)  // Dispo immédiatement
+  pendingBalance    Decimal  @default(0)  // En escrow
+  savingsBalance    Decimal  @default(0)  // Épargne automatique
+  
+  currency          String   @default("EUR")
+  
+  // Paramètres épargne
+  autoSaveEnabled   Boolean  @default(false)
+  autoSavePercent   Decimal  @default(10)  // % à épargner auto
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("wallets")
+}
+
+// ========================================================
+// 🔹 MODEL REVIEW (Avis après mission)
+// ========================================================
+
+model Review {
+  id                String     @id @default(cuid())
+  
+  // Relations
+  missionId         String
+  mission           Mission    @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  reviewerId        String     // Celui qui laisse l'avis
+  reviewer          User       @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  
+  reviewedId        String     // Celui qui reçoit l'avis
+  reviewed          User       @relation("ReviewsReceived", fields: [reviewedId], references: [id])
+  
+  // Type
+  type              ReviewType
+  
+  // Notation
+  rating            Int        // 1-5 étoiles
+  
+  // Critères détaillés
+  communication     Int?       // 1-5
+  quality           Int?       // 1-5
+  professionalism   Int?       // 1-5
+  punctuality       Int?       // 1-5 (pour local)
+  
+  // Commentaire
+  comment           String?
+  
+  // Visibilité
+  isPublic          Boolean    @default(true)
+  
+  // Timestamps
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  
+  @@unique([missionId, reviewerId]) // 1 seul avis par personne par mission
+  @@index([reviewedId])
+  @@index([rating])
+  @@map("reviews")
+}
+
+// ========================================================
+// 🔹 MODEL DISPUTE (Litiges)
+// ========================================================
+
+model Dispute {
+  id                String        @id @default(cuid())
+  
+  // Relations
+  missionId         String
+  mission           Mission       @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  openedById        String
+  openedBy          User          @relation("DisputesOpened", fields: [openedById], references: [id])
+  
+  againstId         String
+  against           User          @relation("DisputesAgainst", fields: [againstId], references: [id])
+  
+  // Détails
+  reason            String
+  description       String
+  evidence          Json?         // Screenshots, docs
+  
+  // Statut
+  status            DisputeStatus @default(OPEN)
+  
+  // Résolution
+  adminId           String?
+  admin             User?         @relation("DisputesHandled", fields: [adminId], references: [id])
+  
+  resolution        String?
+  resolvedAt        DateTime?
+  
+  // Timestamps
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@index([missionId])
+  @@index([status])
+  @@map("disputes")
+}
+
+// ========================================================
+// 🔹 MODEL MESSAGE (Chat entre client/freelancer)
+// ========================================================
+
+model Message {
+  id                String   @id @default(cuid())
+  
+  // Relations
+  contractId        String
+  contract          Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  
+  senderId          String
+  sender            User     @relation("MessagesSent", fields: [senderId], references: [id])
+  
+  receiverId        String
+  receiver          User     @relation("MessagesReceived", fields: [receiverId], references: [id])
+  
+  // Contenu
+  content           String
+  attachments       Json?    // Fichiers, images
+  
+  // Statut
+  isRead            Boolean  @default(false)
+  readAt            DateTime?
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  
+  @@index([contractId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@map("messages")
+}
