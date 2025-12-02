@@ -3,11 +3,11 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: siye-postgres
+    container_name: kwetu-postgres
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: siye_users
+      POSTGRES_DB: kwetu
     ports:
       - "5432:5432"
     volumes:
@@ -18,12 +18,12 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - siye-network
+      - kwetu-network
 
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: siye-redis
+    container_name: kwetu-redis
     ports:
       - "6379:6379"
     volumes:
@@ -35,14 +35,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - siye-network
+      - kwetu-network
 
   # pgAdmin - Interface pour PostgreSQL
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: siye-pgadmin
+    container_name: kwetu-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@siye.com
+      PGADMIN_DEFAULT_EMAIL: admin@kwetu.com
       PGADMIN_DEFAULT_PASSWORD: admin123
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
@@ -52,12 +52,12 @@ services:
     depends_on:
       - postgres
     networks:
-      - siye-network
+      - kwetu-network
 
   # Redis Commander - Interface pour Redis
   redis-commander:
     image: rediscommander/redis-commander:latest
-    container_name: siye-redis-commander
+    container_name: kwetu-redis-commander
     environment:
       REDIS_HOSTS: local:redis:6379
     ports:
@@ -65,7 +65,7 @@ services:
     depends_on:
       - redis
     networks:
-      - siye-network
+      - kwetu-network
 
 volumes:
   postgres_data:
@@ -73,5 +73,5 @@ volumes:
   pgadmin_data:
 
 networks:
-  siye-network:
+  kwetu-network:
     driver: bridge

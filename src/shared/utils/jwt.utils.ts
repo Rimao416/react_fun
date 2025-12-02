@@ -14,6 +14,7 @@ export const generateRefreshToken = (payload: { userId: string }) => {
   });
 };
 
+
 export const verifyToken = (token: string): { userId: string; role: string } => {
   return jwt.verify(token, env.JWT_SECRET) as { userId: string; role: string };
 };
